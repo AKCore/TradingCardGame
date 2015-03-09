@@ -6,10 +6,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Linq;
+using UnityEngine.UI;
 
 public class MainMenu : MonoBehaviour
 {
-	public  bool PlayOffline = true;
+	public  bool PlayOffline = false;
 
 	public static int userid;
 
@@ -52,12 +53,12 @@ public class MainMenu : MonoBehaviour
 	private string pswd = ""; 
 	private string repass = ""; 
 	private string email = ""; 
-	private string url = "http://losange-vision.com/registration.php"; 
-	private string url_login = "http://losange-vision.com/login.php"; 
-	private string url_latest_cards = "http://losange-vision.com/latestcards.php"; 
-	private string url_player_deck = "http://losange-vision.com/playerdecks.php"; 
-	private string url_player_collection = "http://losange-vision.com/playercollection.php"; 
-	public static string url_update_deck = "http://losange-vision.com/updatedeck.php"; 
+	private string url = "http://liquidmuds.com/registration.php"; 
+	private string url_login = "http://liquidmuds.com/login.php"; 
+	private string url_latest_cards = "http://liquidmuds.com/latestcards.php"; 
+	private string url_player_deck = "http://liquidmuds.com/playerdecks.php"; 
+	private string url_player_collection = "http://liquidmuds.com/playercollection.php"; 
+	public static string url_update_deck = "http://liquidmuds.com/updatedeck.php"; 
 
 
 
@@ -76,7 +77,32 @@ public class MainMenu : MonoBehaviour
 	public static string message;
 
 	public static float ColliderWidth, ColliderHeight;
+	//Game menu animations
+	public Animator startSPButton;
+	public Animator startMPButton;
+	public Animator changeDeckButton;
 
+	//Login Menu Animations
+	public Animator usernameInputField;
+	public Animator pswdInputField;
+	public Animator loginButton;
+	public Animator registerButton;
+
+	//Register Menu Animations
+	public Animator usernameRegInputField; //Username Registration
+	public Animator pswdRegInputField;	   //Password Registration
+	public Animator pswdRepRegInputField;  //Repeat Password Registration
+	public Animator emailRegInputField;	   //Email Registration
+	public Animator registerAcctButton;
+	public Animator backButton;
+
+	//Menu GameObjects
+	public GameObject LoginMenu;
+	public GameObject RegisterMenu;
+	public GameObject GameMenu;
+
+	//Text Components for things like Card updates
+	public Text textThing;
 
     public void Awake()
     {
@@ -84,7 +110,6 @@ public class MainMenu : MonoBehaviour
 		CardTemplate instance = CardTemplate.Instance; 
 
     }
-
 
 	public void Start()
 	{
@@ -137,7 +162,7 @@ public class MainMenu : MonoBehaviour
 		string[] lines = cardsstring.Split("\n"[0]); 
 		string[] linearray;
 		// finds the number of cards
-		
+
 		Hashtable[] output = new Hashtable[lines.Length-1];
 		for (int i = 0; i < (lines.Length-1); i++)
 		{
@@ -294,7 +319,7 @@ public class MainMenu : MonoBehaviour
 		if (w.error ==null)
 		{
 			message +=w.text;
-	
+			BackToLogin();
 		}
 		else message +="ERROR:" +w.error + "\n";
 		Debug.Log(message);
@@ -329,6 +354,31 @@ public class MainMenu : MonoBehaviour
 				DoGetPlayerDeck();
 				DoGetPlayerCollection();
 
+				//Do the real login things
+				//Move Login menu out of the way
+				usernameInputField.SetBool("isHidden", true);
+				pswdInputField.SetBool("isHidden", true);
+				loginButton.SetBool("isHidden", true);
+				registerButton.SetBool("isHidden", true);
+				//Wait before moving GameMenu back in
+				yield return new WaitForSeconds(1);
+				//Enable the Game Menu
+				GameMenu.SetActive (true);
+				//Enable GameMenu Animations
+				startSPButton.SetBool("isHidden", false);
+				startSPButton.SetBool("isHidden", false);
+				changeDeckButton.SetBool("isHidden", false);
+
+				//Do some strange handling for the new UI
+				GameObject clone;
+				if (LoggedIn) {
+					for (int i=0; i<promo_vector.Count; i++) {
+						Vector3 p = promo_vector [i];
+						clone = Instantiate(textThing, new Vector3(p.x - 30, Screen.height - p.y + 70, 200),Quaternion.identity) as GameObject;
+						clone.GetComponent<Text>().text = "Price: " + promo_prices [i];
+						//GUI.Label (new Rect (p.x - 30, Screen.height - p.y + 70, 200, 30), "Price: " + promo_prices [i]);
+					}
+				}
 			}
 			else	message +=w.text;
 		}
@@ -336,154 +386,245 @@ public class MainMenu : MonoBehaviour
 	}
     public void OnGUI()
     {
-		if (LoggedIn) {
+//		if (LoggedIn) {
+//			GUI.Label (new Rect (750, 250, 200, 20), "Latest cards (click to buy)");
+//			for (int i=0; i<promo_vector.Count; i++)
+//			{
+//				Vector3 p = promo_vector[i];
+//				GUI.Label(new Rect(p.x-30,Screen.height-p.y+70,200,30), "Price: " +promo_prices[i]);
+//			}
+//
+//		}
+//		//GUILayout.Label("deck count" + playerDeck.Deck.Count.ToString());
+//
+//
+//
+//		GUI.Label(new Rect(Screen.width / 2 -30, ((Screen.height - 350) / 2)+300, 600, 150), Currency.messagecurrency);
+//        GUI.skin.box.fontStyle = FontStyle.Bold;
+//        GUI.Box(new Rect((Screen.width - 400) / 2, (Screen.height - 350) / 2, 400, 300), "TCG Maker 1.3 Demo");
+//        GUILayout.BeginArea(new Rect((Screen.width - 400) / 2, (Screen.height - 350) / 2, 400, 250));
+//
+//        GUILayout.Space(50);
+//
+//		GUILayout.BeginHorizontal();
+//
+//		if (message!="") GUILayout.Box(message);
+//		GUILayout.EndHorizontal();
+//	
+//		if (register)
+//		{
+//			GUILayout.BeginHorizontal();
+//			GUILayout.Label("Username");
+//			username = GUILayout.TextField(username);
+//			GUILayout.EndHorizontal();
+//
+//			GUILayout.BeginHorizontal();
+//			GUILayout.Label("Password");
+//			pswd = GUILayout.TextField(pswd);
+//			GUILayout.EndHorizontal();
+//
+//			GUILayout.BeginHorizontal();
+//			GUILayout.Label("Email");
+//			email = GUILayout.TextField(email);
+//			GUILayout.EndHorizontal();
+//
+//			GUILayout.BeginHorizontal();
+//			GUILayout.Label("Repeat Password");
+//			repass = GUILayout.TextField(repass);
+//			GUILayout.EndHorizontal();
+//
+//		
+//
+//			GUILayout.BeginHorizontal();
+//			
+//			if (GUILayout.Button("Back")) register=false;
+//			
+//			if (GUILayout.Button("Register"))
+//			{
+//				message ="";
+//				if (username=="" || pswd=="" || repass=="" || email=="") message+="Please enter all the fields \n";
+//				else if (pswd==repass) DoRegister();       			  // Registration
+//				else message+="Your password does not match \n";
+//			}
+//			GUILayout.EndHorizontal();
+//			
+//		}
+//		else if ((LoggedIn)||(PlayOffline==true)) {
+//		
+//
+//			GUILayout.BeginHorizontal();
+//			GUILayout.FlexibleSpace();
+//			if (GUILayout.Button("Single Game", GUILayout.Width(200)))
+//			{
+//				
+//				IsMulti = false;
+//				Application.LoadLevel(SceneNameGame);
+//			}
+//			GUILayout.FlexibleSpace();
+//			GUILayout.EndHorizontal();
+//			
+//			
+//
+//			if (!PlayOffline)
+//			{
+//				GUILayout.BeginHorizontal();
+//				GUILayout.FlexibleSpace();
+//				if (GUILayout.Button("Multiplayer Game", GUILayout.Width(200)))
+//			{
+//				IsMulti = true;
+//				Application.LoadLevel(SceneNameMenu);
+//			}
+//				GUILayout.FlexibleSpace();
+//				GUILayout.EndHorizontal();
+//			}
+//		
+//
+//			GUILayout.BeginHorizontal();
+//			GUILayout.FlexibleSpace();
+//			if (GUILayout.Button("Change deck", GUILayout.Width(200)))
+//			{
+//				
+//				Application.LoadLevel(SceneNameEditDeck);
+//				
+//				
+//			}
+//			GUILayout.FlexibleSpace();
+//			GUILayout.EndHorizontal();
+//		}
+//		else
+//		{
+//			GUILayout.BeginHorizontal();
+//			GUILayout.FlexibleSpace();
+//			GUILayout.Label("User:");
+//
+//			username = GUILayout.TextField(username,GUILayout.Width(150));
+//			GUILayout.FlexibleSpace();
+//			GUILayout.EndHorizontal();
+//
+//			GUILayout.BeginHorizontal();
+//			GUILayout.FlexibleSpace();
+//			GUILayout.Label("Password:");
+//			//GUILayout.FlexibleSpace();
+//			pswd = GUILayout.PasswordField(pswd, "*"[0], GUILayout.Width(150));
+//			GUILayout.FlexibleSpace();
+//			GUILayout.EndHorizontal();
+//
+//			GUILayout.BeginHorizontal();
+//			GUILayout.FlexibleSpace();
+//
+//			if (GUILayout.Button("Login")) {
+//					if (username=="" || pswd=="") message+="Please enter all the fields \n";
+//					else DoLogin();           // Login
+//				
+//				}
+//			
+//			if (GUILayout.Button("Register"))	{ register=true; } 
+//			GUILayout.FlexibleSpace();
+//			GUILayout.EndHorizontal();
+//			
+//			}
+//
+//       
+//
+//
+//
+//
+//
+//
+//
+//        GUILayout.EndArea();
+    }
+
+	public void StartSinglePlayer()
+	{
+		IsMulti = false;
+		Application.LoadLevel(SceneNameGame);
+	}
+
+	public void StartMultiPlayer()
+	{
+		IsMulti = true;
+		Application.LoadLevel(SceneNameMenu);
+	}
+	
+	public void EditDeck()
+	{
+		Application.LoadLevel(SceneNameEditDeck);
+	}
+
+	public void CheckLoggedIn()
+	{
+		/*if (LoggedIn) {
 			GUI.Label (new Rect (750, 250, 200, 20), "Latest cards (click to buy)");
 			for (int i=0; i<promo_vector.Count; i++)
 			{
 				Vector3 p = promo_vector[i];
 				GUI.Label(new Rect(p.x-30,Screen.height-p.y+70,200,30), "Price: " +promo_prices[i]);
 			}
+		}*/
 
-		}
-		//GUILayout.Label("deck count" + playerDeck.Deck.Count.ToString());
+	}
 
+	public void UsernameInput(InputField userField)
+	{
+		username = userField.text;
+	}
 
+	public void PasswordInput(InputField pswdField)
+	{
+		pswd = pswdField.text;
+	}
 
-		GUI.Label(new Rect(Screen.width / 2 -30, ((Screen.height - 350) / 2)+300, 600, 150), Currency.messagecurrency);
-        GUI.skin.box.fontStyle = FontStyle.Bold;
-        GUI.Box(new Rect((Screen.width - 400) / 2, (Screen.height - 350) / 2, 400, 300), "TCG Maker 1.3 Demo");
-        GUILayout.BeginArea(new Rect((Screen.width - 400) / 2, (Screen.height - 350) / 2, 400, 250));
+	public void EmailInput(InputField emailField)
+	{
+		email = emailField.text;
+	}
 
-        GUILayout.Space(50);
-
-		GUILayout.BeginHorizontal();
-
-		if (message!="") GUILayout.Box(message);
-		GUILayout.EndHorizontal();
-	
-		if (register)
-		{
-			GUILayout.BeginHorizontal();
-			GUILayout.Label("Username");
-			username = GUILayout.TextField(username);
-			GUILayout.EndHorizontal();
-
-			GUILayout.BeginHorizontal();
-			GUILayout.Label("Password");
-			pswd = GUILayout.TextField(pswd);
-			GUILayout.EndHorizontal();
-
-			GUILayout.BeginHorizontal();
-			GUILayout.Label("Email");
-			email = GUILayout.TextField(email);
-			GUILayout.EndHorizontal();
-
-			GUILayout.BeginHorizontal();
-			GUILayout.Label("Repeat Password");
-			repass = GUILayout.TextField(repass);
-			GUILayout.EndHorizontal();
-
-		
-
-			GUILayout.BeginHorizontal();
-			
-			if (GUILayout.Button("Back")) register=false;
-			
-			if (GUILayout.Button("Register"))
-			{
-				message ="";
-				if (username=="" || pswd=="" || repass=="" || email=="") message+="Please enter all the fields \n";
-				else if (pswd==repass) DoRegister();       			  // Registration
-				else message+="Your password does not match \n";
-			}
-			GUILayout.EndHorizontal();
-			
-		}
-		else if ((LoggedIn)||(PlayOffline==true)) {
-		
-
-			GUILayout.BeginHorizontal();
-			GUILayout.FlexibleSpace();
-			if (GUILayout.Button("Single Game", GUILayout.Width(200)))
-			{
-				
-				IsMulti = false;
-				Application.LoadLevel(SceneNameGame);
-			}
-			GUILayout.FlexibleSpace();
-			GUILayout.EndHorizontal();
-			
-			
-
-			if (!PlayOffline)
-			{
-				GUILayout.BeginHorizontal();
-				GUILayout.FlexibleSpace();
-				if (GUILayout.Button("Multiplayer Game", GUILayout.Width(200)))
-			{
-				IsMulti = true;
-				Application.LoadLevel(SceneNameMenu);
-			}
-				GUILayout.FlexibleSpace();
-				GUILayout.EndHorizontal();
-			}
-		
-
-			GUILayout.BeginHorizontal();
-			GUILayout.FlexibleSpace();
-			if (GUILayout.Button("Change deck", GUILayout.Width(200)))
-			{
-				
-				Application.LoadLevel(SceneNameEditDeck);
-				
-				
-			}
-			GUILayout.FlexibleSpace();
-			GUILayout.EndHorizontal();
-		}
-		else
-		{
-			GUILayout.BeginHorizontal();
-			GUILayout.FlexibleSpace();
-			GUILayout.Label("User:");
-
-			username = GUILayout.TextField(username,GUILayout.Width(150));
-			GUILayout.FlexibleSpace();
-			GUILayout.EndHorizontal();
-
-			GUILayout.BeginHorizontal();
-			GUILayout.FlexibleSpace();
-			GUILayout.Label("Password:");
-			//GUILayout.FlexibleSpace();
-			pswd = GUILayout.PasswordField(pswd, "*"[0], GUILayout.Width(150));
-			GUILayout.FlexibleSpace();
-			GUILayout.EndHorizontal();
-
-			GUILayout.BeginHorizontal();
-			GUILayout.FlexibleSpace();
-
-			if (GUILayout.Button("Login")) {
-					if (username=="" || pswd=="") message+="Please enter all the fields \n";
-					else DoLogin();           // Login
-				
-				}
-			
-			if (GUILayout.Button("Register"))	{ register=true; } 
-			GUILayout.FlexibleSpace();
-			GUILayout.EndHorizontal();
-			
-			}
-
-       
+	public void StartRegister()
+	{
+		//Move Login menu out of the way
+		usernameInputField.SetBool("isHidden", true);
+		pswdInputField.SetBool("isHidden", true);
+		loginButton.SetBool("isHidden", true);
+		registerButton.SetBool("isHidden", true);
+		StartCoroutine(MoveLoginToReg());
+	}
 
 
 
+	IEnumerator MoveLoginToReg()
+	{
+		yield return new WaitForSeconds(1);
+		//Enable the Registration Menu
+		RegisterMenu.SetActive (true);
+		//Move in the Registration Menu
+		usernameRegInputField.SetBool("isHidden", false);
+		pswdRegInputField.SetBool("isHidden", false);
+		pswdRepRegInputField.SetBool("isHidden", false);
+		emailRegInputField.SetBool("isHidden", false);
+		registerAcctButton.SetBool("isHidden", false);
+		backButton.SetBool("isHidden", false);
+	}
 
+	public void BackToLogin()
+	{
+		usernameRegInputField.SetBool("isHidden", true);
+		pswdRegInputField.SetBool("isHidden", true);
+		pswdRepRegInputField.SetBool("isHidden", true);
+		emailRegInputField.SetBool("isHidden", true);
+		registerAcctButton.SetBool("isHidden", true);
+		backButton.SetBool("isHidden", true);
 
+		StartCoroutine(MoveLoginToRegCo());
+	}
 
-
-        GUILayout.EndArea();
-    }
-
+	IEnumerator MoveLoginToRegCo()
+	{
+		yield return new WaitForSeconds(1);
+		usernameInputField.SetBool("isHidden", false);
+		pswdInputField.SetBool("isHidden", false);
+		loginButton.SetBool("isHidden", false);
+		registerButton.SetBool("isHidden", false);
+	}
 
 }

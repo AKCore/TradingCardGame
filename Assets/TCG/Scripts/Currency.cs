@@ -7,12 +7,12 @@ public class Currency : MonoBehaviour
 {
 	static public Currency instance; //the instance of our class that will do the work
 	private static string secretKey = "WorkSucks"; // Edit this value and make sure it's the same as the one stored on the server
-	public static string addSilverURL = "http://losange-vision.com/addsilver.php?"; //be sure to add a ? to your url
+	public static string addSilverURL = "http://liquidmuds.com/addsilver.php?"; //be sure to add a ? to your url
 
-	public static string buyCardURL = "http://losange-vision.com/buycard.php?"; //be sure to add a ? to your url
+	public static string buyCardURL = "http://liquidmuds.com/buycard.php?"; //be sure to add a ? to your url
 
 
-	public static string mycurrencyURL = "http://losange-vision.com/mycurrency.php";
+	public static string mycurrencyURL = "http://liquidmuds.com/mycurrency.php";
 
 	public static string messagecurrency = "";
 	public static int PlayerCurrency;
